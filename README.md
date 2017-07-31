@@ -7,6 +7,16 @@ The software relies on python's APScheduler module to allow restarting the scrip
 
 It controls the camera shutter using the raspberry's GPIO pins. At least with Canon cameras, there is a quirk with taking pictures over USB where you can only take one exposure at a time and are unable to send any more commands until the buffer is cleared. My testing indicated that on average it takes 2 seconds to configure a picture, take it, and save it to SD over USB. With a serial shutter you can make use of the camera's full buffer and the time for a single exposure drops to fractions of a second. So I dug around online for how to craft a trigger cable for my cameras with the raspberry pi and it's proven fairly reliable.
 
+## Other Software
+
+For eclipse specific planning, I can't reccomend Solar Eclipse Maestro enough. It only runs under OSX but is by far the most comprehensive planning tool I've found so far. It can tell you everything you need to know.. it'll give you the precise time of every event of the eclipse, has a simulator for visualizing baily's beads and also has a tool for planning exposure settings for every phase of the eclipse.
+
+http://xjubier.free.fr/en/site_pages/solar_eclipses/Solar_Eclipse_Maestro_Photography_Software.html
+
+(the software is donationware)
+
+If you can't run the software, some of the tools are available as a web version on the author's website.
+
 ## Required Dependencies
 
 ### Non-Python:
