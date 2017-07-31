@@ -1,17 +1,17 @@
 # rpi-eclipse
 This is a collection of scripts to automate camera exposures via a USB connected camera on a raspberry pi. It's built around the idea of "I want to take a picture at a precise time with precise settings." A lot of existing astrophotography software exists to do this sort of thing, but aren't raspberry pi friendly.
 
-At this stage the implementation is quite a mess and needs too much manual fiddling, but it works with my equipment. Long term I'll probably fix that but that because I can think of many other interesting uses for scripted camera exposures, but will be well after the August 21 eclipse.  Currently the scripts are only known to work with a Canon 80D and 500D (T1i), the only bodies I own. In theory they should work with any camera that libgphoto2 supports, but it depends on the configurable options that the camera's PTP interface provides. 
+At this stage the implementation is quite a mess and needs too much manual fiddling, but it works with my equipment. Long term I'll probably fix that but that because I can think of many other interesting uses for scripted camera exposures, but will be well after the August 21 eclipse.  Currently the scripts are only known to work with a Canon 80D and 500D (T1i), the bodies I happen to own. Theoretically they can be made to work with any camera that libgphoto2 supports, but it depends on the configurable options that the camera's PTP interface provides and one's willingness to hack my python code. 
 
-The software relies on python's APScheduler module to allow restarting the script if something goes wrong. All events are scheduled with a timestamp, which means if the script is re-executed it won't try to repeat exposures in the past.
+The software relies on python's APScheduler module to allow restarting the script if something goes wrong. All events are scheduled with a timestamp, which means if the script is re-executed it won't try to repeat exposures that happened in the past.
 
-It controls the camera shutter using the raspberry's GPIO pins. At least with Canon cameras, there is a quirk with taking pictures over USB where you can only take one exposure at a time and are unable to send any more commands until the buffer is cleared. With a serial shutter you can make use of the camera's full buffer. So I dug around online for how to craft a trigger cable for my cameras with the raspberry pi and it's proven fairly reliable.
+It controls the camera shutter using the raspberry's GPIO pins. At least with Canon cameras, there is a quirk with taking pictures over USB where you can only take one exposure at a time and are unable to send any more commands until the buffer is cleared. My testing indicated that on average it takes 2 seconds to configure a picture, take it, and save it to SD over USB. With a serial shutter you can make use of the camera's full buffer and the time for a single exposure drops to fractions of a second. So I dug around online for how to craft a trigger cable for my cameras with the raspberry pi and it's proven fairly reliable.
 
 ## Required Dependencies
 
 ### Non-Python:
 
-- libgphoto2
+- libgphoto2 (with most distributions installing gphoto2 will bring in this library, and you'll want the gphoto2 command line tool to confirm communication with your camera anyway)
 
 ### Python Modules:
 
