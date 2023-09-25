@@ -21,7 +21,7 @@ If you can't run the software, some of the tools are available as a web version 
 
 ### Non-Python:
 
-- libgphoto2 (with most distributions installing gphoto2 will bring in this library, and you'll want the gphoto2 command line tool to confirm communication with your camera anyway)
+- libgphoto2 
 
 ### Python Modules:
 
@@ -35,6 +35,19 @@ If you can't run the software, some of the tools are available as a web version 
 - matplotlib
 - pandas
 - numpy
+
+## Cheatsheet
+
+### Install Packages
+
+```apt install gphoto2 python3-gphoto2 python3-apscheduler python3-matplotlib python3-pandas python3-numpy```
+
+### Confirm Camera Connectivity
+
+```
+gphoto2 --summary
+```
+
 
 The optional dependencies are used only to build a gantt plot of the exposure sequence. I found it useful for visualizing gaps in my exposure sequence.
 

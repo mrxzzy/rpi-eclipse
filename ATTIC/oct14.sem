@@ -1,0 +1,36 @@
+# Solar Eclipse Maestro #
+#########################
+#Action,Date/Ref,Offset Sign,Time Offset,Camera,Exposure,Aperture,ISO,MLU/Burst Number,Quality,Size,Incremental,Comment
+
+
+FOR,(INTERVALOMETER),0,0.201,3
+TAKEPIC,C1,-,00:01:00.0,R5,1/1000,8.0,200,0.000,RAW,None,N,Pre-C1 uneclipsed
+ENDFOR
+
+FOR,(INTERVALOMETER),1,0.201,3
+TAKEPIC,C4,+,00:01:00.0,R5,1/1250,8.0,200,0.000,RAW,None,N,Post-C4 uneclipsed
+ENDFOR
+
+FOR,(INTERVALOMETER),1,0.201,5
+TAKEPIC,C1,-,00:00:00.2,R5,1/1000,8.0,200,0.000,RAW,None,Y,First contact
+ENDFOR
+
+FOR,(INTERVALOMETER),0,0.201,5
+TAKEPIC,C4,+,00:00:00.2,R5,1/1250,8.0,200,0.000,RAW,None,Y,Fourth contact
+ENDFOR
+
+FOR,(VAR),2.0,2.0,99.9
+TAKEPIC,MAGPRE (VAR),+,00:00.0,R5,1/1000,8.0,200,0.000,RAW,None,Y,Partial C1-C2
+ENDFOR
+
+FOR,(VAR),2.0,2.0,99.9
+TAKEPIC,MAGPOST (VAR),+,00:00.0,R5,1/1250,8.0,200,0.000,RAW,None,Y,Partial C3-C4
+ENDFOR
+
+FOR,(INTERVALOMETER),0,0.203,3
+TAKEPIC,C2,-,00:00.0,R5,1/320,8.0,200,0.000,RAW,None,Y,C2 Baily's Beads (annular)
+ENDFOR
+
+FOR,(INTERVALOMETER),1,0.203,3
+TAKEPIC,C3,+,00:00.0,R5,1/320,8.0,200,0.000,RAW,None,Y,C3 Baily's Beads (annular)
+ENDFOR
