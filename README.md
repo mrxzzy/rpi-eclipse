@@ -1,7 +1,7 @@
 # rpi-eclipse
 This is a collection of scripts to automate camera exposures via a USB connected camera on a raspberry pi. It's built around the idea of "I want to take a picture at a precise time with precise settings." A lot of existing astrophotography software exists to do this sort of thing, but aren't raspberry pi friendly.
 
-At this stage the implementation is quite a mess and needs too much manual fiddling, but it works with my equipment. Long term I'll probably fix that but that because I can think of many other interesting uses for scripted camera exposures, but will be well after the August 21 eclipse.  Currently the scripts are only known to work with a Canon 80D and 500D (T1i), the bodies I happen to own. Theoretically they can be made to work with any camera that libgphoto2 supports, but it depends on the configurable options that the camera's PTP interface provides and one's willingness to hack my python code. 
+As of September 2023 I'm doing some rewriting for the pending annular eclipse. It's slightly less messy but not done yet. Due to difficulties of running Solar Eclipse Maestro on modern hardware, I've switched to using Eclipse Orchestrator. Parsing the scripts is kind of weird so instead I'm relying on the output of EO's "View Exposure Sequence.." menu option. It prints out all exposure events with nice timestamps.
 
 The software relies on python's APScheduler module to allow restarting the script if something goes wrong. All events are scheduled with a timestamp, which means if the script is re-executed it won't try to repeat exposures that happened in the past.
 
