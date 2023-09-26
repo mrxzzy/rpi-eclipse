@@ -1,6 +1,4 @@
-#!/usr/bin/python
-
-# this script will use gphoto2 to scrape available configuration options
+# this class will use gphoto2 to scrape available configuration options
 # from the usb attached camera. The script will dump to stdout a python
 # class that can be imported into other scripts
 
@@ -8,9 +6,10 @@ import sys
 import gphoto2 as gp
 import pprint as pp
 
-class CameraOptions:
-  def __init__(self,camera):
+class CameraSettings:
+  def __init__(self,camera,context):
     self.camera = camera
+    self.context = context
 
     self.iso = self.build_dict('iso')
     self.exposure = self.build_dict('shutterspeed')
@@ -24,7 +23,7 @@ class CameraOptions:
   def build_dict(self,field):
 
     try:
-      buf = camera.get_config(context).get_child_by_name(field)
+      buf = self.camera.get_config(self.context).get_child_by_name(field)
     except:
       print("failed to get config for field " + field)
       sys.exit(1)
@@ -48,7 +47,7 @@ if __name__ == '__main__':
     print("Could not init camera.")
     sys.exit(0)
 
-  config = CameraOptions(camera)
+  config = CameraSettings(camera, context)
   
   print("Exposure Options:")
   print(config.exposure)

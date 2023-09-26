@@ -6,17 +6,20 @@
 # the use of apscheduler allows the script to be restarted mid-run if needed,
 # photos already in the past won't be reattempted.
 
-import sys
+import sys, argparse
 import gphoto2 as gp
 import RPi.GPIO as GPIO
 import time
 import csv
+import CameraSettings
+import EOseq
 
-from options80d import CameraSettings
 from datetime import datetime, timedelta
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 class Camera:
+  global debug
+
   def __init__(self):
     try:
       self.context = gp.Context()
@@ -25,6 +28,8 @@ class Camera:
     except:
       print("could not initialize camera")
       sys.exit(1)
+
+    self.settings = CameraSettings.CameraSettings(self.camera,self.context)
 
     try:
       self.pin = 12
@@ -69,21 +74,22 @@ class Camera:
 
     self.config_toggle('viewfinder', 0) # 0 is on, 1 is off. is this mirror lockup?
     #self.config_option('output', 1) # 0 = disables live view. 1 = enables live view
-    self.config_option('capturetarget', CameraSettings.capturetarget['Memory card'])
+
+    self.config_option('capturetarget', self.settings.capturetarget['Memory card'])
 
     self.set_config()
 
-  def set_exposure(self,shutterspeed,aperture,iso,aeb,aebdir):
+  def set_exposure(self,exposure,aperture,iso,aeb,aebdir):
     self.get_config()
 
-    self.config_option('shutterspeed', CameraSettings.shutterspeed[shutterspeed])
-    self.config_option('aperture', CameraSettings.aperture[aperture])
-    self.config_option('iso', CameraSettings.iso[iso])
+    self.config_option('shutterspeed', self.settings.exposure[exposure])
+    self.config_option('aperture', self.settings.aperture[aperture])
+    self.config_option('iso', self.settings.iso[iso])
     if aeb == "Off":
-      self.config_aeb(CameraSettings.aeb['off'], CameraSettings.drivemode['Single'])
+      self.config_aeb(self.settingsi.aeb['off'], self.settings.drivemode['Single'])
       self.trigger_lag = 0.05
     else:
-      self.config_aeb(CameraSettings.aeb['+/- 1'], CameraSettings.drivemode['Continuous high speed'])
+      self.config_aeb(self.settigns.aeb['+/- 1'], self.settings.drivemode['Continuous high speed'])
       self.config_custom(aeb,aebdir)
 
     self.set_config()
@@ -160,39 +166,51 @@ def schedule_alerts(events):
 def print_alert(string):
   print("Event %s happening now!" % (string))
 
-def take_picture(label, start, end, duration, iso, aperture, shutterspeed, aeb, aebdir):
+def take_picture(start, duration, iso, aperture, exposure, aeb, aebdir):
   now = datetime.now()
 
-  print("%s: taking %s picture (%s,%s,%s,%s,%s) (%s seconds estimated)" % (now,label,shutterspeed,aperture,iso,aeb,aebdir,duration) )
-  cam.set_exposure(shutterspeed,aperture,iso,aeb,aebdir)
+  print("%s: taking picture (%s,%s,%s,%s,%s) (%s seconds estimated)" % (now,exposure,aperture,iso,aeb,aebdir,duration) )
+  cam.set_exposure(exposure,aperture,iso,aeb,aebdir)
   if aeb is not None:
     cam.fire_exposure(aeb=True)
   else:
     cam.fire_exposure()
 
-# some convenience variables
-one = timedelta(seconds=1)
-three = timedelta(seconds=3)
-five = timedelta(seconds=5)
 
-cam = Camera()
-cron = BlockingScheduler()
-#schedule_alerts(eclipse)
+if __name__ == '__main__':
+  global debug
 
-with open('mtjefferson.csv', 'r') as csvfile:
-  reader = csv.DictReader(csvfile, delimiter=',')
-  for row in reader:
-    #print(row)
-    cron.add_job(take_picture, 'date', next_run_time=row['start'], kwargs=row)
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-d', '--debug', dest='debug', action='store_true')
+  args = parser.parse_args()
 
-for job in cron.get_jobs():
-  print(job)
+  debug = args.debug
 
-try:
-  print("begin at: %s" % (datetime.now()))
-  cron.start()
-except (KeyboardInterrupt, SystemExit):
-  GPIO.cleanup()
-  cam.exit()
-  pass
+  # some convenience variables
+  one = timedelta(seconds=1)
+  three = timedelta(seconds=3)
+  five = timedelta(seconds=5)
+
+  cam = Camera()
+  cron = BlockingScheduler()
+  #schedule_alerts(eclipse)
+
+  #label, start,                       end,                         duration,  iso,  aperture,  shutterspeed,  aeb,  aebdir
+  #C1,    2017-08-21 16:03:20.750000,  2017-08-21 16:03:22.100000,      1.35,  100,        16,        1/1600,  Off,  None
+
+  camera_events = EOseq.EOseq('oct14.eo')
+
+  for event in camera_events:
+    cron.add_job(take_picture, 'date', next_run_time=event['start'], kwargs=event)
+
+  for job in cron.get_jobs():
+    print(job)
+
+  try:
+    print("begin at: %s" % (datetime.now()))
+    cron.start()
+  except (KeyboardInterrupt, SystemExit):
+    GPIO.cleanup()
+    cam.exit()
+    pass
 
