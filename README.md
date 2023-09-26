@@ -53,22 +53,18 @@ The optional dependencies are used only to build a gantt plot of the exposure se
 
 ## Included Scripts, with a brief explanation of each
 
-- **getoptions.py** - The first script to be used, this one uses gphoto2 to probe the attached camera for a number of configurable options and scrapes all valid settings for those options (such as aperture, shutterspeed, etc). It pretty prints the results into an importable python class that every other script uses. I'm not proud of this scheme but it works. Redirect stdout into something like optionsMYCAMERA.py and edit all other scripts to import that file.
+- **CameraSettings.py** - class that uses gphoto2 to pull a list of capabilities from a usb attached camera and provides the results to eclipse.py
 
-- **options80d.py** - Sample output of the getoptions.py script. This one was produced by a Canon 80d.
+- **EOseq.py** -- class that parases the output of Eclipse Orchestrator's "View Exposure Sequence.." menu option into data that APScheduler can parse into jobs.
 
 - **performancetest.py** - This script can be used to verify you can take pictures on the camera. It is also useful for timing how long it takes the camera to perform various tasks (configure exposure, take a picture, take several pictures, etc) which is data you'll need when scripting exposures. Take note of the configure_custom function, as these values are camera model specific. The options specified in there right now are used to configure bracket ordering and the number of AEB exposures for my 80d.
 
-- **mtjerferson.py** - Another python class used as a config file. It stores evertying needed to plan out exposures.. latitude, longitude, date, time, eclipse events, camera exposure settings.. you name it. Filling out these events is a manual process, I spent a lot of time tinkering in Solar Eclipse Mestro and reading around online to figure out how to photograph an eclipse. **NOTE:** it is much easier if you base all times off UTC+0. Time zones for astrophotography get annoying fast.
-
-- **scheduler.py** - Parses the mtjefferson.py class and dumps to stdout out a CSV of all exposures to be taken, along with timing and settings. This is the easiest format I could come up with for manually reviewing the results. The script has some logic to be "smart" where it will estimate how long it will take for your camera to finish a task and fit as many pictures into the sequence as possible. If the script detects an overlap of two exposures it will mark this in the first column with triple asteriks.
-
 - **gantt.py** - Makes an ugly matplotlib gantt plot of all events during totality. This is a decent visuzaliztion of how busy the camera will be and to spot gaps and overlaps in the sequences where you might need to adjust timing.
-
-- **eclipsesettings.py** - Base class that gets inherited by the eclipse config class (ie, mtjefferson.py). Provides some convenience methods.
 
 - **eclipse.py** - The script that will actually be run during the eclipse. It reads in the CSV file that was produced with scheduler.py, schedules those events with APScheduler, and tries to take pictures when told to.
 
 - **testrun.sh** - A shell script that sets the system time to the date of the eclipse (uses timedatectl) and fires up eclipse.py to make it easy to test the eclipse script in real time.
 
 - **shutter_circuit.png** - png of the small circuit I used to hook the raspberry pi to the shutter release port on my cameras.
+
+- **ATTIC/** - old scripts that will eventually get deleted when I'm done testing the new flow
