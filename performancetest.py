@@ -14,18 +14,6 @@ import random
 from datetime import datetime,timedelta
 import CameraSettings
 
-def timeck(info):
-  global timestamp
-
-  now = datetime.now()
-
-  new = now - timestamp
-
-  print("elapsed time: %s (%s)" % (new,info))
-  timestamp = now
-
-
-
 def configure_option(config,name,value):
   #print("option: %s value: %s" % (name, value))
   buf = config.get_child_by_name(name)
@@ -77,11 +65,48 @@ def dump_option(config,name):
   print(buf.get_value())
 
 
+def configpic(context,settings,aeb_set):
+  config = camera.get_config(context)
+  configure_option(config,'shutterspeed',settings.shutterspeed['1/125'])
+  configure_option(config,'aperture',random.choice(list(settings.aperture.values())))
+  configure_option(config,'iso',random.choice(list(settings.iso.values())))
+  if aeb_state:
+    configure_aeb(config,settings.aeb['+/- 1'],settings.drivemode['Continuous high speed'])
+    configure_custom(config,'m0p',3)
+  else:
+    configure_aeb(config,settings.aeb['off'],settings.drivemode['Single'])
+
+  try:
+    camera.set_config(config,context)
+  except Exception as ex:
+    if type(ex) == gp.GPhoto2Error:
+      print("set_config failed: %s" % (ex))
+      return False
+
+  return True
+
+def takepic(pin,trigger_delay):
+  GPIO.output(pin, True)
+  time.sleep(trigger_delay)
+  GPIO.output(pin, False)
+  print(" ..shutter fired.")
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--aeb', action='store_true')
+parser.add_argument('--config-delay', dest='config_delay', type=float, help='initial delay to use for configuring an exposure')
+parser.add_argument('--shutter-delay', dest='shutter_delay', type=float, help='additional gap to add to shutter to give camera time to flush buffer')
 args = parser.parse_args()
-
 aeb_state = args.aeb
+
+if args.config_delay:
+	config_delay = args.config_delay
+else:
+	config_delay = 0.0
+
+if args.shutter_delay:
+	shutter_delay = args.shutter_delay
+else:
+	shutter_delay = 1.0
 
 try: 
   context = gp.Context()
@@ -94,49 +119,34 @@ except:
 settings = CameraSettings.CameraSettings(camera,context)
 
 try:
-  #GPIO.setmode(GPIO.BCM)
+  pin = 12
   GPIO.setmode(GPIO.BOARD)
-  GPIO.setup(24, GPIO.OUT)
+  GPIO.setup(pin, GPIO.OUT)
 except:
   print("initializing GPIO failed")
   sys.exit(1)
 
-timestamp = datetime.now()
-timeck("init:")
-config = camera.get_config(context)
-timeck("config:")
-
-#configure_toggle(config,'viewfinder',0)
-configure_option(config,'capturetarget',settings.capturetarget['Memory card'])
 
 print("aeb_state: %s" % (aeb_state))
+trigger_delay = 0.01 + shutter_delay # 1/100 plus user specified value
+images_to_take = 10
+success_count = 0
+success = False
 
-configure_option(config,'shutterspeed',settings.shutterspeed['1/100'])
-configure_option(config,'aperture',random.choice(list(settings.aperture.values())))
-configure_option(config,'iso',random.choice(list(settings.iso.values())))
-if aeb_state:
-  configure_aeb(config,settings.aeb['+/- 1'],settings.drivemode['Continuous high speed'])
+while not success:
+  print("New loop, config_delay is %s" % (config_delay))
+  time.sleep(config_delay)
+  if not configpic(context,settings,aeb_state):
+    config_delay = config_delay + 0.1
+  else:
+    takepic(pin,trigger_delay)
+    success_count = success_count + 1
 
-  configure_custom(config,'m0p',3)
-  trigger_lag = 0.8
+  if success_count >= images_to_take:
+    success = True
 
-  #configure_custom(config,'m0p',3)
-  #trigger_lag = 1.4
-else:
-  configure_aeb(config,settings.aeb['off'],settings.drivemode['Single'])
-  trigger_lag = 0.05
-
-timeck("about to save")
-camera.set_config(config,context)
-timeck("saved")
-
-timeck("triggering shutter..")
-GPIO.setup(12, GPIO.OUT)
-GPIO.output(12, True)
-time.sleep(trigger_lag)
-GPIO.output(12, False)
-timeck("..done")
+print("All done. Check camera. If you have %s images then success. You can set these values for eclipse.py:" % (images_to_take))
+print("--config-delay=%s --exposure-delay=%s" % (config_delay, shutter_delay))
 
 GPIO.cleanup()
 camera.exit(context)
-timeck("program done")

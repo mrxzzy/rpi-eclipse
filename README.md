@@ -57,7 +57,7 @@ The optional dependencies are used only to build a gantt plot of the exposure se
 
 - **EOseq.py** -- class that parases the output of Eclipse Orchestrator's "View Exposure Sequence.." menu option into data that APScheduler can parse into jobs.
 
-- **performancetest.py** - This script can be used to verify you can take pictures on the camera. It is also useful for timing how long it takes the camera to perform various tasks (configure exposure, take a picture, take several pictures, etc) which is data you'll need when scripting exposures. Take note of the configure_custom function, as these values are camera model specific. The options specified in there right now are used to configure bracket ordering and the number of AEB exposures for my 80d.
+- **performancetest.py** - Use this script to determine how fast your camera can take photos. The defaults are a config cycle time of 0 seconds and an explosure/buffer clear time of 1 seconds. The script will increment the config time by a tenth of a second on each loop if it sees I/O errors on the camera. The shutter delay time must be manually set. After each run, re-run the script with --config-delay set to the generated value and decrement --shutter-delay  by a tenth of a second until the camera is unable to keep up (you get fewer images on the SD card than the script attempted to capture). The values produced by this script can be used to inform eclipse.py or Eclipse Orchestrator how fast your camera can take images.
 
 - **gantt.py** - Makes an ugly matplotlib gantt plot of all events during totality. This is a decent visuzaliztion of how busy the camera will be and to spot gaps and overlaps in the sequences where you might need to adjust timing.
 
