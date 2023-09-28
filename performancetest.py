@@ -6,12 +6,13 @@
 # it's also useful for benchmarking how quickly the gphoto2 and rpi
 # libraries can configure an exposure and fire the shutter
 
-import sys
+import sys, argparse
 import gphoto2 as gp
 import RPi.GPIO as GPIO
 import time
 import random
 from datetime import datetime,timedelta
+import CameraSettings
 
 def timeck(info):
   global timestamp
@@ -24,7 +25,6 @@ def timeck(info):
   timestamp = now
 
 
-from options80d import CameraSettings
 
 def configure_option(config,name,value):
   #print("option: %s value: %s" % (name, value))
@@ -76,6 +76,13 @@ def dump_option(config,name):
   buf = config.get_child_by_name(name)
   print(buf.get_value())
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--aeb', action='store_true')
+args = parser.parse_args()
+
+aeb_state = args.aeb
+
 try: 
   context = gp.Context()
   camera = gp.Camera()
@@ -83,6 +90,8 @@ try:
 except:
   print("Could not init camera.")
   sys.exit(1)
+
+settings = CameraSettings.CameraSettings(camera,context)
 
 try:
   #GPIO.setmode(GPIO.BCM)
@@ -98,16 +107,15 @@ config = camera.get_config(context)
 timeck("config:")
 
 #configure_toggle(config,'viewfinder',0)
-configure_option(config,'capturetarget',CameraSettings.capturetarget['Memory card'])
+configure_option(config,'capturetarget',settings.capturetarget['Memory card'])
 
-aeb_state = True
-print("aeb: %s" % (aeb_state))
+print("aeb_state: %s" % (aeb_state))
 
-configure_option(config,'shutterspeed',CameraSettings.shutterspeed['1/100'])
-configure_option(config,'aperture',random.choice(list(CameraSettings.aperture.values())))
-configure_option(config,'iso',random.choice(list(CameraSettings.iso.values())))
+configure_option(config,'shutterspeed',settings.shutterspeed['1/100'])
+configure_option(config,'aperture',random.choice(list(settings.aperture.values())))
+configure_option(config,'iso',random.choice(list(settings.iso.values())))
 if aeb_state:
-  configure_aeb(config,CameraSettings.aeb['+/- 1'],CameraSettings.drivemode['Continuous high speed'])
+  configure_aeb(config,settings.aeb['+/- 1'],settings.drivemode['Continuous high speed'])
 
   configure_custom(config,'m0p',3)
   trigger_lag = 0.8
@@ -115,7 +123,7 @@ if aeb_state:
   #configure_custom(config,'m0p',3)
   #trigger_lag = 1.4
 else:
-  configure_aeb(config,CameraSettings.aeb['off'],CameraSettings.drivemode['Single'])
+  configure_aeb(config,settings.aeb['off'],settings.drivemode['Single'])
   trigger_lag = 0.05
 
 timeck("about to save")

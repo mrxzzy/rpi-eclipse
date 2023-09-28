@@ -63,8 +63,6 @@ The optional dependencies are used only to build a gantt plot of the exposure se
 
 - **eclipse.py** - The script that will actually be run during the eclipse. It reads in the CSV file that was produced with scheduler.py, schedules those events with APScheduler, and tries to take pictures when told to.
 
-- **testrun.sh** - A shell script that sets the system time to the date of the eclipse (uses timedatectl) and fires up eclipse.py to make it easy to test the eclipse script in real time.
-
 - **shutter_circuit.png** - png of the small circuit I used to hook the raspberry pi to the shutter release port on my cameras.
 
 - **ATTIC/** - old scripts that will eventually get deleted when I'm done testing the new flow

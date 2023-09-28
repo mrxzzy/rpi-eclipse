@@ -12,7 +12,7 @@ class CameraSettings:
     self.context = context
 
     self.iso = self.build_dict('iso')
-    self.exposure = self.build_dict('shutterspeed')
+    self.shutterspeed = self.build_dict('shutterspeed')
     self.aperture = self.build_dict('aperture')
 
     self.remote = self.build_dict('eosremoterelease')
@@ -50,7 +50,7 @@ if __name__ == '__main__':
   config = CameraSettings(camera, context)
   
   print("Exposure Options:")
-  print(config.exposure)
+  print(config.shutterspeed)
 
   print("Aperture Options:")
   print(config.aperture)

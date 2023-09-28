@@ -5,12 +5,15 @@
 #YYYY/MM/DD HH:MM:SS.S,IncrTime,  Cam, Action Shutter Aperture  ISO  Q    MLU  Filetype, Comment
 #2023/10/14 17:19:04.0,    55.7, asdf,    PIC  1/1500    f/8.0  400  7.9  0.0  RAW,      Partials C3-C4, filter on 45.0%
 
+import os, sys
 import re
 import pprint as pp
 from datetime import datetime
 
 class EOseq:
   def __init__(self,config_file):
+    self.first = False
+    self.last = False
     self.events = []
     self.input = config_file
     self.parse()
@@ -29,6 +32,10 @@ class EOseq:
 
   def parse(self):
 
+    if not os.path.isfile(self.input):
+      print("Script not found (%s)" % (self.input))
+      sys.exit(1)
+
     with open(self.input) as f:
       inloop = False
       startsat = False
@@ -41,23 +48,27 @@ class EOseq:
           fields = re.split(",",line)
 
           when = datetime.strptime(fields[0], '%Y/%m/%d %H:%M:%S.%f')
+          if not self.first:
+            self.first = when
+          self.last = when
           duration = [1]
           action = ' '.join(fields[3].split()).split()
 
-          exposure = action[1]
+          shutterspeed = action[1]
           aperture = action[2].split('/')[1]
           iso = action[3]
 
           exposure = {
-            'start'   : when,
-            'duration': duration,
-            'iso'     : iso,
-            'aperture': aperture,
-            'exposure': exposure,
-            'aeb'     : False,
-            'aebdir'  : 'None',
+            'aeb'         : False,
+            'aebdir'      : 'None',
+            'aperture'    : aperture,
+            'duration'    : duration,
+            'iso'         : iso,
+            'shutterspeed': shutterspeed,
+            'start'       : when,
           }
           self.events.append(exposure)
+
 
 
 if __name__ == '__main__':
