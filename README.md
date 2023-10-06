@@ -59,6 +59,8 @@ The optional dependencies are used only to build a gantt plot of the exposure se
 
 - **performancetest.py** - Use this script to determine how fast your camera can take photos. The defaults are a config cycle time of 0 seconds and an explosure/buffer clear time of 1 seconds. The script will increment the config time by a tenth of a second on each loop if it sees I/O errors on the camera. The shutter delay time must be manually set. After each run, re-run the script with --config-delay set to the generated value and decrement --shutter-delay  by a tenth of a second until the camera is unable to keep up (you get fewer images on the SD card than the script attempted to capture). The values produced by this script can be used to inform eclipse.py or Eclipse Orchestrator how fast your camera can take images.
 
+-- values for canon R7: ./performancetest.py --config-delay=0.15 --shutter-hold=0.2 --buffer-clear=0.4
+
 - **gantt.py** - Makes an ugly matplotlib gantt plot of all events during totality. This is a decent visuzaliztion of how busy the camera will be and to spot gaps and overlaps in the sequences where you might need to adjust timing.
 
 - **eclipse.py** - The script that will actually be run during the eclipse. It reads in the CSV file that was produced with scheduler.py, schedules those events with APScheduler, and tries to take pictures when told to.

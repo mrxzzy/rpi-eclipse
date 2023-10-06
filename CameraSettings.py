@@ -19,6 +19,7 @@ class CameraSettings:
     self.drivemode = self.build_dict('drivemode')
     self.aeb = self.build_dict('aeb')
     self.capturetarget = self.build_dict('capturetarget')
+    self.drivemode = self.build_dict('drivemode')
 
   def build_dict(self,field):
 

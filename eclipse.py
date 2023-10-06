@@ -18,7 +18,9 @@ from datetime import datetime, timedelta
 class Camera:
   global debug
 
-  def __init__(self):
+  def __init__(self,shutter_hold):
+    self.shutter_hold = shutter_hold
+
     try:
       self.context = gp.Context()
       self.camera = gp.Camera()
@@ -37,6 +39,7 @@ class Camera:
       sys.exit(1)
 
     self.config = None
+    self.old_config = []
     self.trigger_lag = 0.05
     self.init_camera()
     print("Camera init successful!")
@@ -57,12 +60,23 @@ class Camera:
     except:
       print("setting camera config failed")
 
+  def config_option(self,name,value):
+    buf = self.config.get_child_by_name(name)
+    setting = buf.get_choice(value)
+    buf.set_value(setting)
+    buf.set_changed(1)
+
   def init_camera(self):
     self.get_config()
     self.config_option('capturetarget', self.settings.capturetarget['Memory card'])
+    #self.config_option('drivemode', self.settings.drivemode['Super high speed continuous shooting'])
     self.set_config()
 
   def set_exposure(self,shutterspeed,aperture,iso,aeb,aebdir):
+    if [shutterspeed,aperture,iso,aeb,aebdir] == self.old_config:
+      print("\t%s Got request to save config but config is not changing, skipping." % (elapsed()))
+      return
+
     self.get_config()
 
     self.config_option('shutterspeed', self.settings.shutterspeed[shutterspeed])
@@ -77,30 +91,21 @@ class Camera:
       self.config_custom(aeb,aebdir)
 
     self.set_config()
+    self.old_config = [shutterspeed,aperture,iso,aeb,aebdir]
 
-  def fire_exposure(self,aeb=False):
+  def trigger_shutter(self,aeb=False):
 
     print("\t%s pressing shutter" % (elapsed()))
     GPIO.output(self.pin, True)
 
     if aeb is True:
       time.sleep(1.4)
-#    else:
-#      time.sleep(0.05)
+    else:
+      print("\t%s pausing for shutter open" % (elapsed()))
+      time.sleep(self.shutter_hold)
 
     GPIO.output(self.pin, False)
     print("\t%s released" % (elapsed()))
-
-  def config_option(self,name,value):
-    buf = self.config.get_child_by_name(name)
-    setting = buf.get_choice(value)
-    buf.set_value(setting)
-    buf.set_changed(1)
-
-  def config_toggle(self,name,value):
-    buf = self.config.get_child_by_name(name)
-    buf.set_value(value)
-    buf.set_changed(1)
 
   def config_aeb(self,aeb,drive):
     buf = self.config.get_child_by_name('aeb')
@@ -146,16 +151,6 @@ def elapsed():
   global event_time
   return "+%fs" % ((datetime.now() - event_time).total_seconds())
 
-def take_picture(iso, aperture, shutterspeed, aeb, aebdir):
-
-  print("\t%s taking picture (%s,%s,%s,%s,%s)" % (elapsed(),shutterspeed,aperture,iso,aeb,aebdir) )
-  cam.set_exposure(shutterspeed,aperture,iso,aeb,aebdir)
-  print("\t%s camera configured" % (elapsed()))
-  if aeb is True:
-    cam.fire_exposure(aeb=True)
-  else:
-    cam.fire_exposure()
-
 def set_date(date):
   print("TEST RUN: Setting date to %s" % (date))
   setdate = date - timedelta(seconds=2)
@@ -177,9 +172,14 @@ if __name__ == '__main__':
   parser.add_argument('-s', '--script', required=True, help='Path to file of camera events.')
   parser.add_argument('-r', '--run-now', action='store_true', help='Set system clock to time of first event to test script now.')
   parser.add_argument('-t', '--set-time', help='Set system clock to this value for test runs.')
+  parser.add_argument('--config-delay', type=float, default=0.15, help='Float, sets a delay in seconds for setting config on the camera.')
+  parser.add_argument('--shutter-hold', type=float, default=0.2, help='Float, how long to hold the shutter button before releasing.')
+  parser.add_argument('--buffer-clear', type=float, default=0.4, help='Float, how long to pause after exposure to flush buffer.')
   args = parser.parse_args()
 
   debug = args.debug
+
+  print("INFO: fastest cycle time with configured delays is %.02f seconds." % (args.config_delay + args.shutter_hold + args.buffer_clear))
 
   if not os.getuid() == 0 and args.run_now is True:
     print("The -r/--run-now option requires running this script as root so it can set the system time.")
@@ -191,14 +191,13 @@ if __name__ == '__main__':
 
   camera_events = EOseq.EOseq(args.script)
 
-  print(camera_events)
   if os.getuid() == 0 and args.run_now is True:
     set_date(camera_events.first)
 
   if os.getuid() == 0 and args.set_time:
     set_date(datetime.strptime(args.set_time, '%Y/%m/%d %H:%M:%S'))
 
-  cam = Camera()
+  cam = Camera(args.shutter_hold)
 
   try:
     for event in camera_events:
@@ -208,11 +207,25 @@ if __name__ == '__main__':
         print("PAST EVENT, rejecting. %s" % (event['start']))
         continue
 
-      time.sleep((event['start'] - now).total_seconds())
+      # pause until our scheduled moment of exposure
+      wait_for_event = (event['start'] - now).total_seconds()
+      if wait_for_event > 0:
+        time.sleep(wait_for_event)
+
+      ledon()
       event_time = datetime.now()
-      print("NEW EVENT scheduled for %s\n\t%s start time" % (event['start'],event_time))
-      take_picture(event['iso'], event['aperture'], event['shutterspeed'], event['aeb'], event['aebdir'])
+      print("NEW EVENT scheduled for %s\n\t%s start time (%ss @ %s ISO %s [%s/%s])" % (event['start'],event_time,event['shutterspeed'],event['aperture'],event['iso'],event['aeb'],event['aebdir']))
+      cam.set_exposure(event['shutterspeed'],event['aperture'],event['iso'],event['aeb'],event['aebdir'])
+      time.sleep(args.config_delay)
+      print("\t%s camera configured" % (elapsed()))
+      if event['aeb'] is True:
+        cam.trigger_shutter(aeb=True)
+      else:
+        cam.trigger_shutter(args.shutter_hold)
+        time.sleep(args.buffer_clear)
+
       print("\n")
+      ledoff()
 
     print("Sequence complete, cleaning up and exiting.")
     if os.getuid() == 0 and args.run_now is True:
