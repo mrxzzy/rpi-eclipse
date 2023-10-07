@@ -1,0 +1,30 @@
+
+# October 14 Annular Eclipse 
+# Location: 37.324892, -109.867990 ( 37 19.49350 N , 109 52.07933 W )
+# Altitude: 1585 meters
+# C1 2023/10/14 15:10:28.5  +18.8
+# C2            16:29:21.6  +31.6
+# MAX           16:31:45.0  +32.0
+# C3            16:34:08.3  +32.3
+# C4            18:01:38.9  +42.0
+
+# Exposure guide:
+#   Partial Phase: 1/800 f8.0 ISO 400
+#   BB: 1/200 f8 ISO 400
+
+YYYY/MM/DD HH:MM:SS.SS,Repeat,Duration,Interval,   Shot,Shutter,Aperture,  ISO, Comment
+2023/10/14 15:00:00.00,  True,       0,      60, SINGLE,  1/800,   f/8.0,  400, Pre Eclipse
+2023/10/14 15:10:28.50, False,       0,       0, SINGLE,  1/800,   f/8.0,  400, C1
+2023/10/14 15:10:29.50,  True,       0,      60, SINGLE,  1/800,   f/8.0,  400, Partial
+2023/10/14 16:29:15.60, False,      12,       0,  BURST,  1/200,   f/8.0,  400, C2-6
+2023/10/14 16:29:21.60, False,       0,       0,   MARK,      0,       0,    0, C2
+2023/10/14 16:29:27.60,  True,       0,       2, SINGLE,  1/800,   f/8.0,  400, ROF
+2023/10/14 16:31:45.00, False,       0,       0, SINGLE,  1/800,   f/8.0,  400, MAX
+2023/10/14 16:29:27.60,  True,       0,       2, SINGLE,  1/800,   f/8.0,  400, ROF
+2023/10/14 16:34:02.30, False,      12,       0,  BURST,  1/200,   f/8.0,  400, C3-6
+2023/10/14 16:34:02.30, False,       0,       0,   MARK,      0,       0,    0, C3
+2023/10/14 16:34:14.30,  True,       0,      60, SINGLE,  1/800,   f/8.0,  400, Partial
+2023/10/14 18:01:38.90, False,       0,       0, SINGLE,  1/800,   f/8.0,  400, C4
+2023/10/14 18:01:39.65,  True,       0,      60, SINGLE,  1/800,   f/8.0,  400, Post Eclipse
+2023/10/14 18:10:00.00, False,       0,       0, SINGLE,  1/800,   f/8.0,  400, Sequence End
+

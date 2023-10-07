@@ -4,6 +4,10 @@ udevrules=99-camera.rules
 service=rpi-eclipse.service
 daemon=eclipse.py
 
+echo "building and installing python package.."
+python setup.py build
+python setup.py install
+
 echo "copying udev rules.."
 cp ${udevrules} /etc/udev/rules.d/
 echo "copying ${daemon}.."

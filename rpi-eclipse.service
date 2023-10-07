@@ -1,0 +1,15 @@
+[Unit]
+Description=rpi-eclipse photo sequence
+
+After=dev-Camera.device
+BindsTo=dev-Camera.device
+Requisite=dev-Camera.device
+
+[Service]
+StandardError=journal
+StandardOutput=journal
+StandardInput=null
+ExecStart=/usr/local/bin/eclipse.py -s /home/sether/rpi-eclipse/secripts/oct14.se -r
+
+[Install]
+WantedBy=blinkled.target

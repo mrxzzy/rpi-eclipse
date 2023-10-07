@@ -12,7 +12,7 @@ import RPi.GPIO as GPIO
 import time
 import random
 from datetime import datetime,timedelta
-import CameraSettings
+from rpieclipse import CameraSettings
 
 def elapsed():
   global event_time
