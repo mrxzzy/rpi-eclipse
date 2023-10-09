@@ -111,7 +111,7 @@ class SEseq:
 
 
 if __name__ == '__main__':
-  test = SEseq('oct14.se',0.75) 
+  test = SEseq('scripts/oct14.se',0.75) 
   for event in test:
     print("%s %s (%ss @ %s ISO %s) duration: %s (%s)" % (event['start'], event['type'], event['shutterspeed'], event['aperture'], event['iso'], event['duration'], event['comment']))
 

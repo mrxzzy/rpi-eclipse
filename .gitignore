@@ -1,4 +1,7 @@
 __pycache__
 build/
 dist/
+rpieclipse.egg-info/
 rpi-eclipse.log
+
+

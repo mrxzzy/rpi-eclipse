@@ -72,9 +72,9 @@ class Camera:
     self.set_config()
 
   def set_exposure(self,settings):
-    if [settings['shutterspeed'],settings['aperture'],settings['iso'],settings['type']] == self.old_config:
-      logging.debug("%s Got request to save config but config is not changing, skipping." % (elapsed()))
-      return
+    #if [settings['shutterspeed'],settings['aperture'],settings['iso'],settings['type']] == self.old_config:
+    #  logging.debug("%s Got request to save config but config is not changing, skipping." % (elapsed()))
+    #  return
 
     self.get_config()
 
@@ -88,7 +88,7 @@ class Camera:
       self.config_option('drivemode', self.settings.drivemode['Single'])
 
     self.set_config()
-    self.old_config = [settings['shutterspeed'],settings['aperture'],settings['iso'],settings['type']]
+    #self.old_config = [settings['shutterspeed'],settings['aperture'],settings['iso'],settings['type']]
 
   def trigger_shutter(self,burst=False):
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     logging.error("Cannot set both -r and -t at the same time.")
     sys.exit(1)
 
-  camera_events = SEseq.SEseq(args.script)
+  camera_events = SEseq.SEseq(args.script,(args.config_delay + args.shutter_hold + args.buffer_clear))
 
   if os.getuid() == 0 and args.run_now is True:
     set_date(camera_events.first)
@@ -189,9 +189,9 @@ if __name__ == '__main__':
         logging.info("Sleeping until next event in %.02f seconds." % (wait_for_event))
         time.sleep(wait_for_event)
 
-      ledon()
       event_time = datetime.now()
-      logging.info("%s EVENT at %s (scheduled) %s (actual) (%ss @ %s ISO %s)" % (event['type'],event['start'],event_time,event['shutterspeed'],event['aperture'],event['iso']))
+      time_late = (event_time - event['start']).total_seconds()
+      logging.info("%s EVENT at %s (scheduled), %ss late. (%ss@f/%s ISO %s)" % (event['type'],event['start'],time_late,event['shutterspeed'],event['aperture'],event['iso']))
       cam.set_exposure(event)
       time.sleep(args.config_delay)
       logging.debug("%s camera configured" % (elapsed()))
@@ -200,8 +200,6 @@ if __name__ == '__main__':
       else:
         cam.trigger_shutter(args.shutter_hold)
         time.sleep(args.buffer_clear)
-
-      ledoff()
 
     logging.info("Sequence complete, cleaning up and exiting.")
     if os.getuid() == 0 and args.run_now is True:

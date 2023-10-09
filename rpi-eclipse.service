@@ -9,7 +9,7 @@ Requisite=dev-Camera.device
 StandardError=journal
 StandardOutput=journal
 StandardInput=null
-ExecStart=/usr/local/bin/eclipse.py -s /home/sether/rpi-eclipse/secripts/oct14.se -r
+ExecStart=/usr/local/bin/eclipse.py -s /home/sether/rpi-eclipse/scripts/oct14.se
 
 [Install]
 WantedBy=blinkled.target
