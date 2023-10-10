@@ -8,23 +8,21 @@
 # C3            16:34:08.3  +32.3
 # C4            18:01:38.9  +42.0
 
-# Exposure guide:
-#   Partial Phase: 1/800 f8.0 ISO 400
-#   BB: 1/200 f8 ISO 400
+# Exposures in this script are for an OD 3.8 solar filter.
 
 YYYY/MM/DD HH:MM:SS.SS,Repeat,Duration,Interval,   Shot,Shutter,Aperture,  ISO, Comment
-2023/10/14 15:00:00.00,  True,       0,      60, SINGLE,  1/800,   f/8.0,  400, Pre Eclipse
-2023/10/14 15:10:28.50, False,       0,       0, SINGLE,  1/800,   f/8.0,  400, C1
-2023/10/14 15:10:29.50,  True,       0,      60, SINGLE,  1/800,   f/8.0,  400, Partial
-2023/10/14 16:29:15.60, False,      12,       0,  BURST,  1/200,   f/8.0,  400, C2-6
+2023/10/14 15:00:00.00,  True,       0,      60, SINGLE, 1/8000,  f/11.0,  100, Pre Eclipse
+2023/10/14 15:10:28.50, False,       0,       0, SINGLE, 1/8000,  f/11.0,  100, C1
+2023/10/14 15:10:29.50,  True,       0,      60, SINGLE, 1/8000,  f/11.0,  100, Partial
+2023/10/14 16:29:15.60, False,      12,       0,  BURST, 1/2000,  f/11.0,  100, C2-6
 2023/10/14 16:29:21.60, False,       0,       0,   MARK,      0,       0,    0, C2
-2023/10/14 16:29:27.60,  True,       0,       2, SINGLE,  1/800,   f/8.0,  400, ROF
-2023/10/14 16:31:45.00, False,       0,       0, SINGLE,  1/800,   f/8.0,  400, MAX
-2023/10/14 16:29:27.60,  True,       0,       2, SINGLE,  1/800,   f/8.0,  400, ROF
-2023/10/14 16:34:02.30, False,      12,       0,  BURST,  1/200,   f/8.0,  400, C3-6
+2023/10/14 16:29:27.60,  True,       0,       2, SINGLE, 1/8000,  f/11.0,  100, ROF
+2023/10/14 16:31:45.00, False,       0,       0, SINGLE, 1/8000,  f/11.0,  100, MAX
+2023/10/14 16:29:27.60,  True,       0,       2, SINGLE, 1/8000,  f/11.0,  100, ROF
+2023/10/14 16:34:02.30, False,      12,       0,  BURST, 1/2000,  f/11.0,  100, C3-6
 2023/10/14 16:34:02.30, False,       0,       0,   MARK,      0,       0,    0, C3
-2023/10/14 16:34:14.30,  True,       0,      60, SINGLE,  1/800,   f/8.0,  400, Partial
-2023/10/14 18:01:38.90, False,       0,       0, SINGLE,  1/800,   f/8.0,  400, C4
-2023/10/14 18:01:39.65,  True,       0,      60, SINGLE,  1/800,   f/8.0,  400, Post Eclipse
-2023/10/14 18:10:00.00, False,       0,       0, SINGLE,  1/800,   f/8.0,  400, Sequence End
+2023/10/14 16:34:14.30,  True,       0,      60, SINGLE, 1/8000,  f/11.0,  100, Partial
+2023/10/14 18:01:38.90, False,       0,       0, SINGLE, 1/8000,  f/11.0,  100, C4
+2023/10/14 18:01:39.65,  True,       0,      60, SINGLE, 1/8000,  f/11.0,  100, Post Eclipse
+2023/10/14 18:10:00.00, False,       0,       0, SINGLE, 1/8000,  f/11.0,  100, Sequence End
 
