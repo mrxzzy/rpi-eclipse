@@ -55,7 +55,7 @@ class Camera:
         success = True
       except Exception as ex:
         logging.error("%s setting camera config failed: %s" % (elapsed(),ex))
-        time.sleep(0.05)
+        time.sleep(0.1)
 
     return
 
