@@ -106,7 +106,7 @@ else:
 if args.shutter_delay:
 	shutter_delay = args.shutter_delay
 else:
-	shutter_delay = 1.0
+	shutter_delay = 0.5
 
 try: 
   context = gp.Context()

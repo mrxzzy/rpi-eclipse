@@ -72,7 +72,7 @@ class EOseq:
 
 
 if __name__ == '__main__':
-  test = EOseq('oct14.eo') 
+  test = EOseq('test14.eo') 
   pp.pprint(test.events)
 
 

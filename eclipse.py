@@ -13,9 +13,7 @@ import time
 import csv
 import CameraSettings
 import EOseq
-
 from datetime import datetime, timedelta
-from apscheduler.schedulers.blocking import BlockingScheduler
 
 class Camera:
   global debug
@@ -30,11 +28,9 @@ class Camera:
       sys.exit(1)
 
     self.settings = CameraSettings.CameraSettings(self.camera,self.context)
-    print(self.settings.aperture)
 
     try:
       self.pin = 12
-      GPIO.setmode(GPIO.BOARD)
       GPIO.setup(self.pin, GPIO.OUT)
     except:
       print("initializing GPIO failed")
@@ -63,20 +59,7 @@ class Camera:
 
   def init_camera(self):
     self.get_config()
-
-    # viewfinder 0 is "normal" mode
-    # viewfinder 1 shuts off LCD and viewfinder, live view can easily be enabled
-    #   by pressing button on camera. NO PICTURES TAKEN when this is set and live
-    #   view is off
-
-    # output 0 is "normal" mode
-    # output 1 turns on LCD w/liveview
-
-    #self.config_toggle('viewfinder', 0) # 0 is on, 1 is off. is this mirror lockup?
-    #self.config_option('output', 1) # 0 = disables live view. 1 = enables live view
-
     self.config_option('capturetarget', self.settings.capturetarget['Memory card'])
-
     self.set_config()
 
   def set_exposure(self,shutterspeed,aperture,iso,aeb,aebdir):
@@ -95,25 +78,18 @@ class Camera:
 
     self.set_config()
 
-  def fire_exposure(self,aeb=False,count=1):
+  def fire_exposure(self,aeb=False):
 
-    time.sleep(0.10)
+    print("\t%s pressing shutter" % (elapsed()))
+    GPIO.output(self.pin, True)
 
-    for pic in range(count):
+    if aeb is True:
+      time.sleep(1.4)
+#    else:
+#      time.sleep(0.05)
 
-      sys.stdout.write("pressing shutter.. ")
-      sys.stdout.flush()
-      GPIO.output(self.pin, True)
-
-      if aeb is True:
-        time.sleep(1.4)
-      else:
-        time.sleep(0.05)
-
-      GPIO.output(self.pin, False)
-      print("..released.")
-      if count > 1:
-        time.sleep(0.25)
+    GPIO.output(self.pin, False)
+    print("\t%s released" % (elapsed()))
 
   def config_option(self,name,value):
     buf = self.config.get_child_by_name(name)
@@ -160,19 +136,22 @@ class Camera:
     buf.set_value(option_string)
     buf.set_changed(1)
 
-def schedule_alerts(events):
-  for event in events:
-    cron.add_job(print_alert, 'date', next_run_time=events[event], args=[event])
+def ledon():
+  GPIO.output(33,GPIO.HIGH)
 
-def print_alert(string):
-  print("Event %s happening now!" % (string))
+def ledoff():
+  GPIO.output(33,GPIO.LOW)
 
-def take_picture(start, duration, iso, aperture, shutterspeed, aeb, aebdir):
-  now = datetime.now()
+def elapsed():
+  global event_time
+  return "+%fs" % ((datetime.now() - event_time).total_seconds())
 
-  print("%s: taking picture (%s,%s,%s,%s,%s) (%s seconds estimated)" % (now,shutterspeed,aperture,iso,aeb,aebdir,duration) )
+def take_picture(iso, aperture, shutterspeed, aeb, aebdir):
+
+  print("\t%s taking picture (%s,%s,%s,%s,%s)" % (elapsed(),shutterspeed,aperture,iso,aeb,aebdir) )
   cam.set_exposure(shutterspeed,aperture,iso,aeb,aebdir)
-  if aeb is not None:
+  print("\t%s camera configured" % (elapsed()))
+  if aeb is True:
     cam.fire_exposure(aeb=True)
   else:
     cam.fire_exposure()
@@ -189,10 +168,15 @@ def unset_date():
 if __name__ == '__main__':
   global debug
 
+  GPIO.setmode(GPIO.BOARD)
+  GPIO.setwarnings(False)
+  GPIO.setup(33,GPIO.OUT)
+
   parser = argparse.ArgumentParser()
   parser.add_argument('-d', '--debug', dest='debug', action='store_true')
   parser.add_argument('-s', '--script', required=True, help='Path to file of camera events.')
   parser.add_argument('-r', '--run-now', action='store_true', help='Set system clock to time of first event to test script now.')
+  parser.add_argument('-t', '--set-time', help='Set system clock to this value for test runs.')
   args = parser.parse_args()
 
   debug = args.debug
@@ -201,29 +185,46 @@ if __name__ == '__main__':
     print("The -r/--run-now option requires running this script as root so it can set the system time.")
     sys.exit(1)
 
+  if args.run_now and args.set_time:
+    print("Cannot set both -r and -t at the same time.")
+    sys.exit(1)
+
   camera_events = EOseq.EOseq(args.script)
 
+  print(camera_events)
   if os.getuid() == 0 and args.run_now is True:
     set_date(camera_events.first)
 
+  if os.getuid() == 0 and args.set_time:
+    set_date(datetime.strptime(args.set_time, '%Y/%m/%d %H:%M:%S'))
+
   cam = Camera()
-  cron = BlockingScheduler()
-  #schedule_alerts(eclipse)
-
-  for event in camera_events:
-    cron.add_job(take_picture, 'date', next_run_time=event['start'], kwargs=event)
-
-  for job in cron.get_jobs():
-    print(job)
 
   try:
-    print("begin at: %s" % (datetime.now()))
-    cron.start()
+    for event in camera_events:
+      now = datetime.now()
+
+      if (now - event['start']).total_seconds() > 0.5:
+        print("PAST EVENT, rejecting. %s" % (event['start']))
+        continue
+
+      time.sleep((event['start'] - now).total_seconds())
+      event_time = datetime.now()
+      print("NEW EVENT scheduled for %s\n\t%s start time" % (event['start'],event_time))
+      take_picture(event['iso'], event['aperture'], event['shutterspeed'], event['aeb'], event['aebdir'])
+      print("\n")
+
+    print("Sequence complete, cleaning up and exiting.")
+    if os.getuid() == 0 and args.run_now is True:
+      unset_date()
+    GPIO.cleanup()
+    cam.exit()
+
   except (KeyboardInterrupt, SystemExit):
     print("caught interrupt, cleaning up and exiting")
     if os.getuid() == 0 and args.run_now is True:
       unset_date()
     GPIO.cleanup()
     cam.exit()
-    sys.exit(0)
+
 

@@ -1,0 +1,5 @@
+
+# detects when a Canon camera is plugged in. Add more idVendor/idProduct pairs if you use a different body..
+ACTION=="add", SUBSYSTEM=="usb", ENV{ID_VENDOR_FROM_DATABASE}=="Canon, Inc.", SYMLINK+="Camera", TAG+="systemd", ENV{SYSTEMD_WANTS}+="rpi-eclipse.service", RUN+="/usr/bin/touch /tmp/camera_plugged_in"
+ACTION=="remove", SUBSYSTEM=="usb", ENV{ID_VENDOR_FROM_DATABASE}=="Canon, Inc.", RUN+="/bin/rm -f /tmp/camera_plugged_in"
+
